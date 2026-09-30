@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bus Tracking System — UI Prototype</title>
+<style>
+:root{
+  --bg:#f5f5f2; --surface:#ffffff; --surface2:#f0f0ed; --border:#dedcd3; --borderS:#c7c4b7;
+  --text:#2c2c2a; --text2:#6b6a63; --muted:#9c9a90;
+  --accent:#4a63e7; --accentBg:#e8ecfd; --onAccent:#ffffff;
+  --ok:#1f7a4d; --okBg:#e3f5ea; --warn:#a4650f; --warnBg:#fbeed9; --danger:#b3311f; --dangerBg:#fbe4e0;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17181a; --surface:#212226; --surface2:#292a2e; --border:#35363a; --borderS:#46474c;
+    --text:#eceef0; --text2:#9a9ba1; --muted:#6d6e73;
+    --accentBg:#242a4d; --okBg:#12271d; --warnBg:#332711; --dangerBg:#361613;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17181a; --surface:#212226; --surface2:#292a2e; --border:#35363a; --borderS:#46474c;
+  --text:#eceef0; --text2:#9a9ba1; --muted:#6d6e73;
+  --accentBg:#242a4d; --okBg:#12271d; --warnBg:#332711; --dangerBg:#361613;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100%}
+header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:0.5px solid var(--border);padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px}
+.htop{display:flex;align-items:center;justify-content:space-between;max-width:1000px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+.brand .ic{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--onAccent);display:flex;align-items:center;justify-content:center;font-size:14px}
+.tabs{display:flex;gap:6px;max-width:1000px;margin:10px auto 0;overflow-x:auto}
+.tab{flex:0 0 auto;font-size:13px;padding:7px 14px;border-radius:999px;border:0.5px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;white-space:nowrap}
+.tab.on{background:var(--accent);color:var(--onAccent);border-color:transparent;font-weight:500}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 40px}
+.panel{display:none}.panel.on{display:block}
+h1{font-size:18px;margin:0 0 2px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 18px}
+.row{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+/* phone */
+.phone{width:270px;background:var(--surface2);border:0.5px solid var(--borderS);border-radius:26px;padding:9px}
+.scr{background:var(--surface);border-radius:18px;overflow:hidden;min-height:500px;display:flex;flex-direction:column}
+.pbar{display:flex;justify-content:space-between;padding:7px 14px 0;font-size:10px;color:var(--text2)}
+.phead{padding:6px 14px 10px;display:flex;align-items:center;gap:9px}
+.phead h3{font-size:15px;font-weight:500;margin:0}
+.pbody{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px;flex:1}
+.mapcard{background:var(--accentBg);border-radius:13px;height:145px;position:relative;overflow:hidden}
+.mapcard svg{width:100%;height:100%}
+.eta{position:absolute;bottom:7px;left:7px;right:7px;background:var(--surface);border-radius:9px;padding:7px 9px;font-size:11px;display:flex;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.busrow{display:flex;align-items:center;gap:9px;padding:9px;border:0.5px solid var(--border);border-radius:11px;font-size:12px}
+.busrow.sel{border-color:var(--accent);background:var(--accentBg)}
+.busicon{width:30px;height:30px;border-radius:8px;background:var(--accent);color:var(--onAccent);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+.busrow .t{flex:1}.busrow small{display:block;color:var(--text2);font-size:10px}
+.seatgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.seat{aspect-ratio:1;border-radius:6px;border:0.5px solid var(--borderS);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text2)}
+.seat.taken{background:var(--surface2);color:var(--muted);border-style:dashed}
+.seat.sel{background:var(--accent);color:var(--onAccent);border-color:transparent;font-weight:600}
+.pfoot{padding:10px 14px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.navtab{display:flex;border-top:0.5px solid var(--border);padding:7px 6px 9px}
+.navtab div{flex:1;text-align:center;font-size:9px;color:var(--muted)}
+.navtab div.on{color:var(--accent);font-weight:500}
+.badge{font-size:10px;padding:2px 8px;border-radius:999px}
+.ok{background:var(--okBg);color:var(--ok)}.wt{background:var(--warnBg);color:var(--warn)}.dg{background:var(--dangerBg);color:var(--danger)}
+button.primary{background:var(--accent);color:var(--onAccent);border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer}
+button.ghost{background:transparent;border:0.5px solid var(--borderS);border-radius:9px;padding:9px 16px;font-size:13px;color:var(--text);cursor:pointer}
+/* dashboards */
+.win{background:var(--surface2);border:0.5px solid var(--borderS);border-radius:14px;overflow:hidden;max-width:760px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--borderS)}
+.av{margin-left:auto;width:22px;height:22px;border-radius:50%;background:var(--accentBg);color:var(--accent);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.dbd{padding:18px;display:flex;flex-direction:column;gap:16px}
+.sosbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--dangerBg);color:var(--danger);border:none;border-radius:16px;padding:22px;font-size:17px;font-weight:700;width:100%;cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--surface);border-radius:11px;padding:11px 13px}
+.stat .n{font-size:20px;font-weight:700}
+.stat .l{font-size:10px;color:var(--text2)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-weight:600;color:var(--text2);padding:6px 7px;border-bottom:0.5px solid var(--borderS);font-size:10px;text-transform:uppercase}
+td{padding:6px 7px;border-bottom:0.5px solid var(--border)}
+.sec-h{font-size:12px;font-weight:600;margin:0 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.kpi{background:var(--surface);border-radius:11px;padding:11px 13px}
+.kpi .n{font-size:18px;font-weight:700}
+.kpi .l{font-size:10px;color:var(--text2)}
+.kpi .d{font-size:10px;color:var(--ok)}
+.mapbig{background:var(--accentBg);border-radius:13px;height:200px;position:relative;overflow:hidden}
+.mapbig svg{width:100%;height:100%}
+.legend{position:absolute;top:9px;right:9px;background:var(--surface);border-radius:9px;padding:7px 9px;font-size:10px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.legend span{display:flex;align-items:center;gap:5px;margin:3px 0}
+.dotc{width:7px;height:7px;border-radius:50%}
+.barwrap{display:flex;align-items:flex-end;gap:8px;height:100px;padding:0 2px 16px}
+.bar{flex:1;background:var(--accent);border-radius:5px 5px 0 0;position:relative;opacity:.85}
+.bar span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--text2)}
+footer{max-width:1000px;margin:0 auto;padding:0 16px 30px;font-size:11px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <div class="brand"><span class="ic">🚌</span>Campus Bus System — UI Prototype</div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-p="p1">1 · Student Mobile</button>
+    <button class="tab" data-p="p2">2 · Driver Dashboard</button>
+    <button class="tab" data-p="p3">3 · Admin Web Dashboard</button>
+  </div>
+</header>
+<main>
+
+<section id="p1" class="panel on">
+  <h1>Student Mobile Interface</h1>
+  <p class="sub">Bus tracking &amp; seat reservation</p>
+  <div class="row">
+    <div class="phone"><div class="scr">
+      <div class="pbar"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="phead"><div class="busicon" style="width:26px;height:26px">🚌</div><h3>Track my bus</h3></div>
+      <div class="pbody">
+        <div class="mapcard"><svg viewBox="0 0 260 145"><path d="M10 118 Q80 40 130 85 T250 30" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/><circle cx="200" cy="45" r="6" fill="var(--accent)"/><circle cx="30" cy="110" r="4" fill="var(--text)"/><circle cx="238" cy="26" r="4" fill="var(--text)"/></svg>
+          <div class="eta"><span>Bus B12 · Gate 3</span><span>ETA <b>4 min</b></span></div></div>
+        <div class="busrow sel"><div class="busicon">🚌</div><span class="t">B12 · Campus Loop<small>12 seats left</small></span><span class="badge ok">On time</span></div>
+        <div class="busrow"><div class="busicon">🚌</div><span class="t">B07 · Hostel Express<small>3 seats left</small></span><span class="badge wt">4 min late</span></div>
+        <div class="busrow"><div class="busicon">🚌</div><span class="t">B03 · Town Line<small>Full</small></span><span class="badge ok">On time</span></div>
+      </div>
+      <div class="navtab"><div class="on">📍 Track</div><div>💺 Book</div><div>🎫 Tickets</div><div>👤 Profile</div></div>
+    </div></div>
+
+    <div class="phone"><div class="scr">
+      <div class="pbar"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="phead">← <h3>Reserve a seat</h3></div>
+      <div class="pbody">
+        <p style="font-size:11px;color:var(--text2);margin:0">B12 · Campus Loop · Departs 10:15 AM</p>
+        <div class="seatgrid">
+          <div class="seat">1A</div><div class="seat">1B</div><div class="seat taken">1C</div><div class="seat">1D</div>
+          <div class="seat">2A</div><div class="seat sel">2B</div><div class="seat">2C</div><div class="seat taken">2D</div>
+          <div class="seat taken">3A</div><div class="seat">3B</div><div class="seat">3C</div><div class="seat">3D</div>
+          <div class="seat">4A</div><div class="seat">4B</div><div class="seat taken">4C</div><div class="seat">4D</div>
+        </div>
+        <div style="font-size:10px;color:var(--text2)">Free · Selected · Taken</div>
+        <div style="background:var(--surface2);border-radius:9px;padding:8px 10px;font-size:11px;color:var(--text2)">Fare: <b style="color:var(--text)">RM 2.00</b> · Pay by student wallet</div>
+      </div>
+      <div class="pfoot"><span style="font-size:11px;color:var(--text2)">Seat 2B</span><button class="primary">Confirm booking</button></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="p2" class="panel">
+  <h1>Driver Dashboard Interface</h1>
+  <p class="sub">One-click SOS alert &amp; passenger manifest</p>
+  <div class="win">
+    <div class="topbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px">Driver console · Bus B12 · Campus Loop</span><span class="av">DR</span></div>
+    <div class="dbd">
+      <button class="sosbtn">⚠️ PRESS FOR SOS</button>
+      <div class="grid2">
+        <div class="stat"><div class="n">18 / 22</div><div class="l">Passengers on board</div></div>
+        <div class="stat"><div class="n">92%</div><div class="l">On-time score today</div></div>
+      </div>
+      <div class="mapcard" style="height:110px"><svg viewBox="0 0 400 110"><path d="M10 88 Q120 25 200 60 T390 18" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/><circle cx="200" cy="60" r="6" fill="var(--accent)"/></svg><div class="eta"><span>Next stop: Hostel B</span><span><b>2 min</b></span></div></div>
+      <div>
+        <p class="sec-h">Passenger manifest</p>
+        <table><tr><th>Seat</th><th>Passenger</th><th>Boarded</th><th>Drop-off</th></tr>
+        <tr><td>2B</td><td>Ali bin Ahmad</td><td><span class="badge ok">Yes</span></td><td>Gate 3</td></tr>
+        <tr><td>2A</td><td>Siti Nur</td><td><span class="badge ok">Yes</span></td><td>Gate 3</td></tr>
+        <tr><td>3B</td><td>Kevin Tan</td><td><span class="badge wt">Pending</span></td><td>Hostel B</td></tr>
+        <tr><td>3C</td><td>Nur Aisyah</td><td><span class="badge ok">Yes</span></td><td>Hostel B</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="p3" class="panel">
+  <h1>Admin Web Dashboard</h1>
+  <p class="sub">Fleet tracking &amp; demand analytics</p>
+  <div class="win">
+    <div class="topbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px">Fleet control · Admin dashboard</span><span class="av">AD</span></div>
+    <div class="dbd">
+      <div class="kpis">
+        <div class="kpi"><div class="n">24</div><div class="l">Buses active</div><div class="d">+2 today</div></div>
+        <div class="kpi"><div class="n">1,340</div><div class="l">Riders today</div><div class="d">+8%</div></div>
+        <div class="kpi"><div class="n">96.2%</div><div class="l">On-time rate</div><div class="d">+1.1%</div></div>
+        <div class="kpi"><div class="n">1</div><div class="l">Active SOS alerts</div></div>
+      </div>
+      <div class="grid2" style="grid-template-columns:1.3fr 1fr">
+        <div class="mapbig"><svg viewBox="0 0 400 200">
+          <path d="M20 175 Q120 60 200 115 T380 40" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="2 8"/>
+          <path d="M40 40 Q150 135 260 85 T380 165" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="2 8" opacity="0.5"/>
+          <circle cx="200" cy="115" r="6" fill="var(--accent)"/><circle cx="260" cy="85" r="6" fill="var(--accent)"/><circle cx="320" cy="55" r="6" fill="var(--accent)"/>
+          <circle cx="120" cy="75" r="6" fill="var(--danger)"/><circle cx="120" cy="75" r="11" fill="none" stroke="var(--danger)" stroke-width="1.5"/>
+        </svg><div class="legend"><span><span class="dotc" style="background:var(--accent)"></span>Bus, on route</span><span><span class="dotc" style="background:var(--danger)"></span>SOS alert</span></div></div>
+        <div>
+          <p class="sec-h">Demand by hour</p>
+          <div class="barwrap">
+            <div class="bar" style="height:35%"><span>7a</span></div><div class="bar" style="height:80%"><span>8a</span></div><div class="bar" style="height:55%"><span>9a</span></div>
+            <div class="bar" style="height:30%"><span>12p</span></div><div class="bar" style="height:45%"><span>2p</span></div><div class="bar" style="height:90%"><span>5p</span></div><div class="bar" style="height:60%"><span>6p</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="sec-h">Fleet status</p>
+        <table><tr><th>Bus</th><th>Route</th><th>Load</th><th>Status</th></tr>
+        <tr><td>B12</td><td>Campus Loop</td><td>18 / 22</td><td><span class="badge ok">On time</span></td></tr>
+        <tr><td>B07</td><td>Hostel Express</td><td>19 / 20</td><td><span class="badge wt">4 min late</span></td></tr>
+        <tr><td>B03</td><td>Town Line</td><td>—</td><td><span class="badge dg">SOS active</span></td></tr>
+        <tr><td>B15</td><td>North Gate</td><td>14 / 20</td><td><span class="badge ok">On time</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>Prototype for demonstration · sample data · Campus Bus System</footer>
+<script>
+document.querySelectorAll('.tab').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+    b.classList.add('on');
+    document.getElementById(b.dataset.p).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
+make a website for this
